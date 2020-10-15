@@ -5,5 +5,6 @@
         ["OK", "dummy_value_1", "dummy_value_2", "dummy_value_3", "dummy_value_4", "dummy_value_5"],
         ["Good", "cofee", "friends", "shopping", "party", "good_grade", "got_a_gift",
         "ate_good_food", "fun_activity", "did_sport", "date", "rested_well", "did_good_at_work"]
-    ]
+    ],
+    "weekday": "0"
 }
