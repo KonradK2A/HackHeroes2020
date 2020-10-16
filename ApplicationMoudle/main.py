@@ -168,22 +168,29 @@ class StatsManager:
     pass
 
 class CallendarManager:
+    def __init__(self):
+        pass
     """
     manages calendar (idk how to do it)
     """
     
+    from datetime import datetime
     with open("config.json", "r") as f:
         data = json.load(f)
+        global firstWeekday
         firstWeekday = int(data["weekday"])
         f.close()
+        
+        global date
+        date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
+        # self.date[0:4], self.date[5:7] 
 
-
-    def generateSimpleCalendar(self, firstWeekday = firstWeekday):
+    def generateSimpleCalendar(self):
         import calendar        
-        c = calendar.TextCalendar()
-        c.setfirstweekday(firstWeekday)
-        print(c.formatmonth(2020, 10))
-
+        calendar = calendar.TextCalendar()
+        calendar.setfirstweekday(firstWeekday)
+        calendar.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
+        
 
 
 #TODO DataInputManager.getMoodInfo() - lines 62, 67, 73 only two out of <A LOT> values printed
