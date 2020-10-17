@@ -5,9 +5,13 @@ It manages the input, output and feedback that application gives.
 
 import json
 import os
+from datetime import datetime
 
-#clear terminal
+# clear terminal
 clear = lambda: os.system('cls')
+
+# configuration file
+CONFIG_FILE = "config.json"
 
 class DataInputManager:
     """ user inputs their feelings that are converted to a json file.
@@ -32,7 +36,6 @@ class DataInputManager:
 
     # gets date and time of action
     def dateTime(self):
-        from datetime import datetime
         self.date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
         self.time = datetime.now().strftime("%H:%M:%S") # HH:MM:SS
         # print(self.date, self.time)
@@ -40,7 +43,7 @@ class DataInputManager:
     
     # gets info about user's mood devided to three levels (0/1/2) "bad", "ok", "good"
     # also checks wevents caused selected mood
-    def getMoodInfo(self, configFile = "config.json"):
+    def getMoodInfo(self, configFile = CONFIG_FILE):
         # loads list of possible actions
         try:
             with open(configFile, "r") as f:
@@ -58,44 +61,33 @@ class DataInputManager:
         # lets user enter the mood as key or word (any accepted)
         clear
         moodTypes = {"Bad":0, "Ok":1, "Good":2}      
-        self.moodValue = input(f"{moodTypes}"
+        self.moodValue = input(f"{moodTypes}\n"
                           "Input your mood >>")
 
         # asks user what kind of action / event caused previously selected mood
         # also changes self.moodValue into integer (easier AI computing)
+        if self.moodValue.lower() == "bad": self.moodValue = "0"
+        if self.moodValue.lower() == "ok": self.moodValue = "1"
+        if self.moodValue.lower() == "good": self.moodValue = "2"
+
+        if self.moodValue == "0":
+            for i in range(len(events[0])):
+                print(f"{events[0][i]} - {i}")
+        if self.moodValue == "1":
+            for i in range(len(events[1])):
+                print(f"{events[1][i]} - {i}")
+        if self.moodValue == "2":
+            for i in range(len(events[2])):
+                print(f"{events[2][i]} - {i}")
+
+
         clear
-        print("What happened? (use spacebar or coma as a separator)")
-        if self.moodValue == "0" or self.moodValue.lower() == "bad":
-            self.moodValue = "0"
-            for i in range(1,len(events)):
-                print(f"{events[0][i]}, {i}")
-            self.clickedEventsList = [events[0][0]]
-        elif self.moodValue == "1" or self.moodValue.lower() == "ok":
-            self.moodValue = 1
-            for i in range(1,len(events)):
-                print(f"{events[1][i]}, {i}")
-            self.clickedEventsList = [events[1][0]]
-
-        elif self.moodValue == "2" or self.moodValue.lower() == "good":
-            self.moodValue = 2
-            for i in range(1, len(events)):
-                print(f"{events[2][i]}, {i}")
-            self.clickedEventsList = [events[2][0]]
-        
+        print("What happened? (use spacebar as a separator)")
         # actual input
-        appendToListStr = input(">> ")
-
+        checkedEvents = input(">> ")
         # append events list actions that happened on indexes 1 and above. 
-        # index 0 is by default assigned to mood type (as integer)
-        for i in range(len(appendToListStr)):
-            try:
-                if appendToListStr[i].isdigit() and appendToListStr[i+1].isdigit():
-                    self.clickedEventsList.append(appendToListStr[i] + appendToListStr[i+1])
-                elif appendToListStr[i].isdigit():
-                    self.clickedEventsList.append(appendToListStr[i])
-            except IndexError:
-                pass
-                
+        self.checkedEvents = checkedEvents.split()
+
     #loads mood data to json file that stores the mood-events data
     def loadToJSON(self):
         try:
@@ -103,9 +95,9 @@ class DataInputManager:
                 "date": self.date,
                 "time": self.time,
                 "moodValue": self.moodValue,
-                "events": self.clickedEventsList                
+                "events": self.checkedEvents                
             }
-            
+            print(data)
         except UnboundLocalError as e:
             clear
             print(f"ERROR!\n{e}")
@@ -167,41 +159,83 @@ class StatsManager:
     """
     pass
 
+import calendar
 class CallendarManager:
     def __init__(self):
         pass
     """
     manages calendar (idk how to do it)
     """
-    
-    from datetime import datetime
-    with open("config.json", "r") as f:
-        data = json.load(f)
-        global firstWeekday
-        firstWeekday = int(data["weekday"])
-        f.close()
-        
-        global date
-        date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
-        # self.date[0:4], self.date[5:7] 
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            data = json.load(f)
+            global firstWeekday
+            firstWeekday = int(data["weekday"])
+            f.close()
+            
+            global date
+            date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
+            # self.date[0:4], self.date[5:7] 
+    except FileNotFoundError:
+        import time
+        print(f"Error! File {CONFIG_FILE} not found. Quitting application.")
+        #time.sleep(5)
+        #quit()
 
     def generateSimpleCalendar(self):
-        import calendar        
-        calendar = calendar.TextCalendar()
-        calendar.setfirstweekday(firstWeekday)
-        calendar.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
-        
+        cal = calendar.TextCalendar()
+        cal.setfirstweekday(firstWeekday)
+        cal.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
 
+    def addNewTerm(self):
+        forbiddenInput = ["", " ", "  ", "\t", "\n", "q", "Q"]
+        control = 0
+        clear
+        print("Set info about new term... | Q to quit")
+        while True:
+            termTitle = input("\tTitle: ")
+            if termTitle.strip() in forbiddenInput[:-2]:
+                control +=1
+            elif termTitle.strip() in forbiddenInput[-2:]:
+                print("Quitting"); break
+                
+            termDate = input("\tDate [YYYY-MM-DD]: ")
+            if termDate.strip() in forbiddenInput[-2:]:
+                print("Quitting"); break
+            else:
+                try:
+                    datetime.datetime.striptime(termDate.strip(), "%Y-%m-d")
+                except ValueError:
+                    control +=10
+
+            termTime = input("\tTime [HH:MM]: ")
+            if termTime.strip() in forbiddenInput[-2:]:
+                print("Quitting"); break
+            else:
+                try:
+                    datetime.datetime.striptime(termTime.strip(), "%H:%M")
+                except ValueError:
+                    control +=100
+            termDescription = input("\tDescription: ")
+            
+            if control > 0:
+                continue
+            else:
+                break
 
 #TODO DataInputManager.getMoodInfo() - lines 62, 67, 73 only two out of <A LOT> values printed
 #TODO DataInputManager - bugfixes and security (try-except)
+#TODO config.json not found
 
 #UNM = UserNotesManager()
 #UNM.makeChoice()
 #UNM.readNotes()
 
-#DIM = DataInputManager()
-#DIM.getMoodInfo()
+# DIM = DataInputManager()
+# DIM.dateTime()
+# DIM.getMoodInfo()
+# DIM.loadToJSON()
 
-CM = CallendarManager()
-CM.generateSimpleCalendar()
+#CM = CallendarManager()
+#CM.generateSimpleCalendar()
+#CM.addNewTerm()
