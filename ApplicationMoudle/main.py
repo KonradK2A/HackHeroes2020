@@ -1,11 +1,21 @@
 """
 This script is a prototype main logic file that is reffered to the GUI prototype.
 It manages the input, output and feedback that application gives.
+
+When I was coding this me, my team leader and God knew what the heck is going here. But I forgot to make comments. So now only God knows.
+
+Version: if I only knew...
+Hours wasted here: not that many lol
+
+Made with 💖 by:
+Olha Babicheva and Konrad Kihan
+ZSŁ GDAŃSK 2020
 """
 
 import json
 import os
 from datetime import datetime
+import calendar
 
 # clear terminal
 clear = lambda: os.system('cls')
@@ -13,24 +23,12 @@ clear = lambda: os.system('cls')
 # configuration file
 CONFIG_FILE = "config.json"
 
-class DataInputManager:
-    """ user inputs their feelings that are converted to a json file.
-    Every feeling or action has unique number value and is stored in json file.
-    Data is being saved to external file that saves input over time.
-
-    Json data slice structure:
-    {
-        'date': '<DATE OF ADDITION>',
-        'time': '<TIME OF ADDITION>',
-        'moodValue': '<VALUE>
-        'events':[
-            '<TYPE BAD | OK | GOOD>': '<VALUE>',
-            '<TYPE BAD | OK | GOOD>': '<VALUE>',
-            ...
-            '<TYPE BAD | OK | GOOD>': '<VALUE>',
-        ],
-    }
-    """
+class MoodInputManager:
+    global moodFile
+    moodFile = "mood.dat"
+    """ user inputs their feelings that are converted to a dat file.
+    Every feeling or action has unique number value and is stored in dat file.
+    Data is being saved to external file that saves input over time."""
     def __init__(self):
         pass
 
@@ -42,14 +40,14 @@ class DataInputManager:
         return [self.date, self.time]
     
     # gets info about user's mood devided to three levels (0/1/2) "bad", "ok", "good"
-    # also checks wevents caused selected mood
+    # also checks events that caused selected mood
     def getMoodInfo(self, configFile = CONFIG_FILE):
         # loads list of possible actions
         try:
             with open(configFile, "r") as f:
                 events = json.load(f)
                 clear
-                print(list(events.values())[0][1])
+                #print(list(events.values())[0][1])
                 events = list(events.values())[0]
         except FileNotFoundError as e:
             clear
@@ -61,7 +59,7 @@ class DataInputManager:
         # lets user enter the mood as key or word (any accepted)
         clear
         moodTypes = {"Bad":0, "Ok":1, "Good":2}      
-        self.moodValue = input(f"{moodTypes}\n"
+        self.moodValue = input(f"{moodTypes}\n"  
                           "Input your mood >>")
 
         # asks user what kind of action / event caused previously selected mood
@@ -84,55 +82,75 @@ class DataInputManager:
         clear
         print("What happened? (use spacebar as a separator)")
         # actual input
-        checkedEvents = input(">> ")
+        try:
+            checkedEvents = input(">> ")
+        except ValueError:
+            # will be handled again later
+            pass
         # append events list actions that happened on indexes 1 and above. 
         self.checkedEvents = checkedEvents.split()
 
+        for event in self.checkedEvents:
+            try:
+                if self.checkedEvents.count(event) > 1:
+                    self.checkedEvents.remove(event)
+            except ValueError:
+                self.checkedEvents.remove(event)
+        self.checkedEvents.sort()
+
+
     #loads mood data to json file that stores the mood-events data
-    def loadToJSON(self):
+    def loadToFile(self, moodFile = moodFile):
         try:
-            data = {
-                "date": self.date,
-                "time": self.time,
-                "moodValue": self.moodValue,
-                "events": self.checkedEvents                
-            }
-            print(data)
+            with open(moodFile, "a") as f:
+                data = f"{self.date}|{self.time}|{self.moodValue}|{self.checkedEvents}\n"
+                f.write(data)
+            print("Success!")
         except UnboundLocalError as e:
             clear
             print(f"ERROR!\n{e}")
 
 
 class UserNotesManager:
+    userNotesFile = "notes.dat"
     # manages user's notes
-    # gets time from DataInputManager
-    DataInputManager = DataInputManager()
-    date = DataInputManager.dateTime()[0]
-    time = DataInputManager.dateTime()[1]
+    # gets time from MoodInputManager
+    MoodInputManager = MoodInputManager()
+    date = MoodInputManager.dateTime()[0]
+    time = MoodInputManager.dateTime()[1]
     # print(date, time)
-    def createNewNote(self, userNotesFile = "usernotes.json", date=date, time=time):
+    def createNewNote(self, userNotesFile = userNotesFile, date=date, time=time):
         # note input
         clear
         with open(userNotesFile, "a") as f:
+            numLines = len(open(userNotesFile, "r").readlines())
+            print(numLines)
+
             title = input("Enter title: ")
             content = input("Enter new note: ")
-            newNote = {
-                "date": date,
-                "time": time,
-                "title": title,
-                "content": content
-            }
-            json.dump(newNote, f)
-            f.close()
+            newNote = f"{numLines}|{date}|{time}|{title}|{content}\n"
+            f.write(newNote)
+            
 
-    def readNotes(self, userNotesFile = "usernotes.json"):
+    def readNotes(self, userNotesFile = userNotesFile):
         try:
             clear 
             with open(userNotesFile, "r") as f:
-                data = json.load(f)
-                for post in data["title"]:
-                    print(f"Title: {post['title']}")
-                    print(f"Time: {post['date']}|{post['time']} ")
+                notes = f.readlines()
+                print("Choose one note from all below:")# \t\t\t\t\t\t\t Q to quit")
+                for note in notes:
+                    note = note.split(sep="|")
+                    print(f"{note[0]}, {note[1]}, {note[2]}, {note[3]}")
+                choice = input(">> ")
+                for note in notes:
+                    note = note.split(sep="|")
+                    if str(note[0]) == choice:
+                        print(f"{note[3]}\t{note[1]}, {note[2]}\n{note[-1]}\n")
+                    else:
+                        pass
+                
+                    
+
         except FileNotFoundError:
             print("Oops... You do not have any notes yet.")
         
@@ -146,21 +164,54 @@ class UserNotesManager:
         elif choice.lower() == "read":
             readNotes()
 
-        
-class FunnyGenerator:
-    """
-    function generates wholesome or funny content if user asks for it
-    """
-    pass
 
 class StatsManager:
     """
     manages analitycs of mood levels input and stuff
     """
-    pass
+    def readMood(self, moodFile = moodFile):
+        try:
+            with open(moodFile, "r") as f:
+                data = f.readlines()
+        except FileNotFoundError:
+            import time
+            print(f"Error! File {moodFile} not found or is empty.")
+                
+        self.dateList = []
+        for record in data:
+            record = record.split(sep="|")
+            
+            for i in range(len(record)):
+                record[2] = int(record[2])
+            # conversion of this weird table (last element of record) to the legitimate list
+            eventsValues = record[-1].strip('][').split(', ')
 
-import calendar
-class CallendarManager:
+            
+            for i in range(len(eventsValues)):
+                eventsValues[i] = int(eventsValues[-1].strip("]\n").strip("'"))
+            record[-1] = eventsValues
+            # [ 'DATE YYYY-MM-DD', 'TIME HH-MM-SS', 'MOOOD_VALUE 0-2 INT', [EVENT LIST INT] ]
+            self.record = record
+
+            # creates sorted list of dates for chart generator
+            self.dateList.append(self.record[0])
+            print(self.dateList)
+
+    def generateChart(self):
+        # to generate chart
+        import matplotlib.pyplot as plt
+        # to convert dates
+        import matplotlib.dates
+        
+        #converted_dates = list(map(datetime.strptime, self.datelist, len(self.dateList)*['%Y-%m-%d']))
+        #x_axis = converted_dates
+
+        
+        plt.ylabel("Mood values")
+
+class CalendarManager:
+    global calendarFile
+    calendarFile = "callendar.json"
     def __init__(self):
         pass
     """
@@ -179,8 +230,8 @@ class CallendarManager:
     except FileNotFoundError:
         import time
         print(f"Error! File {CONFIG_FILE} not found. Quitting application.")
-        #time.sleep(5)
-        #quit()
+        time.sleep(5)
+        quit()
 
     def generateSimpleCalendar(self):
         cal = calendar.TextCalendar()
@@ -199,12 +250,12 @@ class CallendarManager:
             elif termTitle.strip() in forbiddenInput[-2:]:
                 print("Quitting"); break
                 
-            termDate = input("\tDate [YYYY-MM-DD]: ")
+            termDate = input("\tDate [DD-MM-YYYY]: ")
             if termDate.strip() in forbiddenInput[-2:]:
                 print("Quitting"); break
             else:
                 try:
-                    datetime.datetime.striptime(termDate.strip(), "%Y-%m-d")
+                    datetime.strptime(termDate.strip(), "%d-%m-%Y")
                 except ValueError:
                     control +=10
 
@@ -213,29 +264,85 @@ class CallendarManager:
                 print("Quitting"); break
             else:
                 try:
-                    datetime.datetime.striptime(termTime.strip(), "%H:%M")
+                    datetime.strptime(termTime.strip(), "%H:%M")
                 except ValueError:
                     control +=100
             termDescription = input("\tDescription: ")
-            
+            print(control)
             if control > 0:
                 continue
             else:
                 break
 
-#TODO DataInputManager.getMoodInfo() - lines 62, 67, 73 only two out of <A LOT> values printed
-#TODO DataInputManager - bugfixes and security (try-except)
-#TODO config.json not found
+        with open(calendarFile, "a") as f:
+            newTerm = {
+                "date": termDate,
+                "time": termTime,
+                "title": termTitle,
+                "description": termDescription
+            }
+            json.dump(newTerm, f)
+            f.close()
+        
+    def readSavedTerms(self):
+        with open(calendarFile, "r") as f:
+            x = json.loads(calendarFile)
+            print(x["title"])
 
-#UNM = UserNotesManager()
-#UNM.makeChoice()
-#UNM.readNotes()
 
-# DIM = DataInputManager()
-# DIM.dateTime()
-# DIM.getMoodInfo()
-# DIM.loadToJSON()
+class MenuManager:
+    pass
+    def menu(self):
+        print("===\tWelcome to the %APPNAME%!\t===\tv0.2\t===\n"
+            "Set of actions:\n"
+            "Vibe check\t1\n"
+            "Notes\t\t2\n"
+            "Statistics\t3\n"
+            "Callendar\t4\n"
+            "===\t===\t===\t===\n"
+            "Quit\t\tQ\n")
+        menuSelect = input(">> ")
+    
+        
+        if menuSelect.lower() == "q":
+            quit()
+    
+        elif menuSelect.lower() == "1":
+            mim = MoodInputManager()
+            mim.dateTime()
+            mim.getMoodInfo()
+            mim.loadToFile()
+        
+        elif menuSelect.lower() == "2":
+            unm = UserNotesManager()
+            choice = input("Do you want to create 'new' note or 'read' the old ones?\n>> ")
+            if choice.lower() == "new":
+                unm.createNewNote()
+            elif choice.lower() == "read":
+                unm.readNotes()
 
-#CM = CallendarManager()
-#CM.generateSimpleCalendar()
-#CM.addNewTerm()
+        elif menuSelect.lower() == "3":
+            pass
+
+        elif menuSelect.lower() == "4":
+            cm = CalendarManager()
+            choice = input("Do you want to create 'new' term or 'read' the old ones?\n>> ")
+            
+            if choice.lower() == "new":
+                cm.addNewTerm()
+            elif choice.lower() == "read":
+                cm.readSavedTerms()
+
+
+
+#TODO MoodInputManager - bugfixes and security (try-except)
+#TODO generateChart - create chart
+#TODO cosmetics like not ending app instantly and stuff
+
+sm = StatsManager()
+sm.readMood()
+sm.generateChart()
+
+# if __name__ == "__main__":
+#     MM = MenuManager()
+#     MM.menu()
