@@ -124,7 +124,7 @@ class UserNotesManager:
         clear
         with open(userNotesFile, "a") as f:
             numLines = len(open(userNotesFile, "r").readlines())
-            print(numLines)
+            #print(numLines)
 
             title = input("Enter title: ")
             content = input("Enter new note: ")
@@ -178,6 +178,7 @@ class StatsManager:
             print(f"Error! File {moodFile} not found or is empty.")
                 
         self.dateList = []
+        self.moodList = []
         for record in data:
             record = record.split(sep="|")
             
@@ -195,23 +196,28 @@ class StatsManager:
 
             # creates sorted list of dates for chart generator
             self.dateList.append(self.record[0])
-            print(self.dateList)
+            self.moodList.append(self.record[2])
+        #print(self.moodList, len(self.moodList))
+        #print(self.dateList, len(self.dateList))
 
     def generateChart(self):
         # to generate chart
         import matplotlib.pyplot as plt
-        # to convert dates
-        import matplotlib.dates
+        import matplotlib.dates as pld
         
-        #converted_dates = list(map(datetime.strptime, self.datelist, len(self.dateList)*['%Y-%m-%d']))
-        #x_axis = converted_dates
-
+        plt.plot(self.dateList, self.moodList)
+        #TODO fix this non-integer Y values
         
         plt.ylabel("Mood values")
+        plt.xlabel("Dates")
+        plt.show()
+        #converted_dates = list(map(datetime.strptime, self.datelist, len(self.dateList)*['%Y-%m-%d']))
+        #x_axis = converted_dates
+     
 
 class CalendarManager:
     global calendarFile
-    calendarFile = "callendar.json"
+    calendarFile = "calendar.dat"
     def __init__(self):
         pass
     """
@@ -222,7 +228,6 @@ class CalendarManager:
             data = json.load(f)
             global firstWeekday
             firstWeekday = int(data["weekday"])
-            f.close()
             
             global date
             date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
@@ -236,14 +241,16 @@ class CalendarManager:
     def generateSimpleCalendar(self):
         cal = calendar.TextCalendar()
         cal.setfirstweekday(firstWeekday)
-        cal.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
+        cal = cal.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
+        print(cal)
+
 
     def addNewTerm(self):
         forbiddenInput = ["", " ", "  ", "\t", "\n", "q", "Q"]
-        control = 0
         clear
         print("Set info about new term... | Q to quit")
         while True:
+            control = 0
             termTitle = input("\tTitle: ")
             if termTitle.strip() in forbiddenInput[:-2]:
                 control +=1
@@ -255,7 +262,7 @@ class CalendarManager:
                 print("Quitting"); break
             else:
                 try:
-                    datetime.strptime(termDate.strip(), "%d-%m-%Y")
+                    pass #it's literally useless
                 except ValueError:
                     control +=10
 
@@ -270,30 +277,40 @@ class CalendarManager:
             termDescription = input("\tDescription: ")
             print(control)
             if control > 0:
+                print("You made an error while creating a term.")
+                if control == 1: print(f"Error at given title: {termTitle}. Try again")
+                elif control == 10: print(f"Error at given date: {termDate}. Try again")
+                elif control == 100: print(f"Error at given time: {termTime}. Try again")
+                elif control != 1 and control != 10 and control != 100: print("Error in some parameters. Try again")
                 continue
             else:
+                with open(calendarFile, "a") as f:
+                    numLines = len(open(calendarFile, "r").readlines())
+                    print(numLines)
+                    f.write(f"{numLines}|{termDate}|{termTime}|{termTitle}|{termDescription}\n")
                 break
-
-        with open(calendarFile, "a") as f:
-            newTerm = {
-                "date": termDate,
-                "time": termTime,
-                "title": termTitle,
-                "description": termDescription
-            }
-            json.dump(newTerm, f)
-            f.close()
+        
         
     def readSavedTerms(self):
         with open(calendarFile, "r") as f:
-            x = json.loads(calendarFile)
-            print(x["title"])
-
+            terms = f.readlines()
+            print("Choose one note from all below:")# \t\t\t\t\t\t\t Q to quit")
+            for term in terms:
+                term = term.split(sep="|")
+                print(f"{term[0]}, {term[1]}, {term[2]}")
+            choice = input(">> ")
+            for term in terms:
+                term = term.split(sep="|")
+                if str(term[0]) == choice:
+                    print(f"{term[3]}\t{term[1]}, {term[2]}\n{term[-1]}\n")
+                else:
+                    pass
+                
 
 class MenuManager:
     pass
     def menu(self):
-        print("===\tWelcome to the %APPNAME%!\t===\tv0.2\t===\n"
+        print("===\tWelcome to the %APPNAME%!\t===\tv0.3\t===\n"
             "Set of actions:\n"
             "Vibe check\t1\n"
             "Notes\t\t2\n"
@@ -304,16 +321,16 @@ class MenuManager:
         menuSelect = input(">> ")
     
         
-        if menuSelect.lower() == "q":
+        if menuSelect.lower().strip() == "q":
             quit()
     
-        elif menuSelect.lower() == "1":
+        elif menuSelect.lower().strip() == "1":
             mim = MoodInputManager()
             mim.dateTime()
             mim.getMoodInfo()
             mim.loadToFile()
         
-        elif menuSelect.lower() == "2":
+        elif menuSelect.lower().strip() == "2":
             unm = UserNotesManager()
             choice = input("Do you want to create 'new' note or 'read' the old ones?\n>> ")
             if choice.lower() == "new":
@@ -321,28 +338,27 @@ class MenuManager:
             elif choice.lower() == "read":
                 unm.readNotes()
 
-        elif menuSelect.lower() == "3":
-            pass
+        elif menuSelect.lower().strip() == "3":
+            sm = StatsManager()
+            sm.readMood()
+            sm.generateChart()
 
-        elif menuSelect.lower() == "4":
+        elif menuSelect.lower().strip() == "4":
             cm = CalendarManager()
+            cm.generateSimpleCalendar()
             choice = input("Do you want to create 'new' term or 'read' the old ones?\n>> ")
             
             if choice.lower() == "new":
+                cm.generateSimpleCalendar()
                 cm.addNewTerm()
             elif choice.lower() == "read":
                 cm.readSavedTerms()
 
 
-
 #TODO MoodInputManager - bugfixes and security (try-except)
-#TODO generateChart - create chart
 #TODO cosmetics like not ending app instantly and stuff
 
-sm = StatsManager()
-sm.readMood()
-sm.generateChart()
 
-# if __name__ == "__main__":
-#     MM = MenuManager()
-#     MM.menu()
+if __name__ == "__main__":
+    MM = MenuManager()
+    MM.menu()
