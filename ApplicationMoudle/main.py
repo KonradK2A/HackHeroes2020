@@ -16,9 +16,11 @@ import json
 import os
 from datetime import datetime
 import calendar
+import time
 
 # clear terminal
-clear = lambda: os.system('cls')
+def clear():
+    print("\n\n\n\n"*25)
 
 # configuration file
 CONFIG_FILE = "config.json"
@@ -46,40 +48,41 @@ class MoodInputManager:
         try:
             with open(configFile, "r") as f:
                 events = json.load(f)
-                clear
+                clear()
                 #print(list(events.values())[0][1])
                 events = list(events.values())[0]
         except FileNotFoundError as e:
-            clear
+            clear()
             print(f"Error! File {configFile} not found. Quitting application.")
-            import time
             time.sleep(5)
             quit()
 
         # lets user enter the mood as key or word (any accepted)
-        clear
+        clear()
         moodTypes = {"Bad":0, "Ok":1, "Good":2}      
         self.moodValue = input(f"{moodTypes}\n"  
                           "Input your mood >>")
 
         # asks user what kind of action / event caused previously selected mood
         # also changes self.moodValue into integer (easier AI computing)
-        if self.moodValue.lower() == "bad": self.moodValue = "0"
-        if self.moodValue.lower() == "ok": self.moodValue = "1"
-        if self.moodValue.lower() == "good": self.moodValue = "2"
+        try: 
+            if self.moodValue.lower() == "bad" or self.moodValue == "0": self.moodValue = "-1"
+            if self.moodValue.lower() == "ok" or self.moodValue == "1": self.moodValue = "0"
+            if self.moodValue.lower() == "good" or self.moodValue == "2": self.moodValue = "1"
+            if int(self.moodValue) > 2: print("error!"); return False
+        except ValueError:
+            pass
 
-        if self.moodValue == "0":
+        if self.moodValue == "-1":
             for i in range(len(events[0])):
                 print(f"{events[0][i]} - {i}")
-        if self.moodValue == "1":
+        if self.moodValue == "0":
             for i in range(len(events[1])):
                 print(f"{events[1][i]} - {i}")
-        if self.moodValue == "2":
+        if self.moodValue == "1":
             for i in range(len(events[2])):
                 print(f"{events[2][i]} - {i}")
 
-
-        clear
         print("What happened? (use spacebar as a separator)")
         # actual input
         try:
@@ -103,11 +106,15 @@ class MoodInputManager:
     def loadToFile(self, moodFile = moodFile):
         try:
             with open(moodFile, "a") as f:
-                data = f"{self.date}|{self.time}|{self.moodValue}|{self.checkedEvents}\n"
-                f.write(data)
-            print("Success!")
+                try:
+                    data = f"{self.date}|{self.time}|{self.moodValue}|{self.checkedEvents}\n"
+                    f.write(data)
+                    print("Success!")
+                except AttributeError:
+                    pass
+            
         except UnboundLocalError as e:
-            clear
+            clear()
             print(f"ERROR!\n{e}")
 
 
@@ -121,7 +128,7 @@ class UserNotesManager:
     # print(date, time)
     def createNewNote(self, userNotesFile = userNotesFile, date=date, time=time):
         # note input
-        clear
+        clear()
         with open(userNotesFile, "a") as f:
             numLines = len(open(userNotesFile, "r").readlines())
             #print(numLines)
@@ -134,7 +141,7 @@ class UserNotesManager:
 
     def readNotes(self, userNotesFile = userNotesFile):
         try:
-            clear 
+            clear()
             with open(userNotesFile, "r") as f:
                 notes = f.readlines()
                 print("Choose one note from all below:")# \t\t\t\t\t\t\t Q to quit")
@@ -148,6 +155,7 @@ class UserNotesManager:
                         print(f"{note[3]}\t{note[1]}, {note[2]}\n{note[-1]}\n")
                     else:
                         pass
+                input("\n\n\nPress ENTER key to continue")
                 
                     
 
@@ -155,11 +163,11 @@ class UserNotesManager:
             print("Oops... You do not have any notes yet.")
         
     def makeChoice(self):
-        clear
+        clear()
         choice = input("Do you want to create 'new' note or 'read' the old one?\n>>")
 
         if choice.lower() == "new":
-            clear
+            clear()
             createNewNote()
         elif choice.lower() == "read":
             readNotes()
@@ -174,7 +182,6 @@ class StatsManager:
             with open(moodFile, "r") as f:
                 data = f.readlines()
         except FileNotFoundError:
-            import time
             print(f"Error! File {moodFile} not found or is empty.")
                 
         self.dateList = []
@@ -233,21 +240,20 @@ class CalendarManager:
             date = str(datetime.date(datetime.now()))  # YYYY-MM-DD
             # self.date[0:4], self.date[5:7] 
     except FileNotFoundError:
-        import time
         print(f"Error! File {CONFIG_FILE} not found. Quitting application.")
         time.sleep(5)
         quit()
 
     def generateSimpleCalendar(self):
+        clear()
         cal = calendar.TextCalendar()
         cal.setfirstweekday(firstWeekday)
         cal = cal.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
-        print(cal)
+        print("\t",cal)
 
 
     def addNewTerm(self):
         forbiddenInput = ["", " ", "  ", "\t", "\n", "q", "Q"]
-        clear
         print("Set info about new term... | Q to quit")
         while True:
             control = 0
@@ -286,8 +292,11 @@ class CalendarManager:
             else:
                 with open(calendarFile, "a") as f:
                     numLines = len(open(calendarFile, "r").readlines())
-                    print(numLines)
+                    #print(numLines)
                     f.write(f"{numLines}|{termDate}|{termTime}|{termTitle}|{termDescription}\n")
+                    print("Success")
+                    time.sleep(34)
+                    
                 break
         
         
@@ -305,6 +314,8 @@ class CalendarManager:
                     print(f"{term[3]}\t{term[1]}, {term[2]}\n{term[-1]}\n")
                 else:
                     pass
+
+        input("\n\n\nPress ENTER key to continue")
                 
 
 class MenuManager:
@@ -360,5 +371,7 @@ class MenuManager:
 
 
 if __name__ == "__main__":
-    MM = MenuManager()
-    MM.menu()
+    while True:
+        clear()
+        MM = MenuManager()
+        MM.menu()
