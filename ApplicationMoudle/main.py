@@ -18,12 +18,13 @@ from datetime import datetime
 import calendar
 import time
 
+# configuration file
+CONFIG_FILE = "config.json"
+
 # clear terminal
 def clear():
     print("\n\n\n\n"*25)
 
-# configuration file
-CONFIG_FILE = "config.json"
 
 class MoodInputManager:
     global moodFile
@@ -101,8 +102,61 @@ class MoodInputManager:
                 self.checkedEvents.remove(event)
         self.checkedEvents.sort()
 
+    # reads stuff from history
+    def historyRead(self, moodFile = moodFile, configFile=CONFIG_FILE):
+        historyDate = input("What day do you want to check? YYYY-MM-DD\n>>")
+        with open(moodFile, "r") as f:
+            for i in f.readlines():
+                if i.startswith(historyDate):
+                    # set mood value as text to make output more user friendly
+                   
+                    i = i.split(sep="|")
+                    eventsList = i[-1]
+                    dateCheck = i[0]
+                    
 
-    #loads mood data to json file that stores the mood-events data
+                    try:
+                        with open(configFile, "r") as f:
+                            events = json.load(f)
+
+                            if i[2] == "-1": moodLst = list(events.values())[0][0]; mood = "bad"
+                            if i[2] == "0": moodLst = list(events.values())[0][1]; mood = "ok-ish"
+                            if i[2] == "1": moodLst = list(events.values())[0][2]; mood = "good"
+                            
+                            eventsList = eventsList.strip("['")
+                            eventsList = eventsList.strip("']\n")
+                            eventsList = eventsList.split(sep="', '")                     
+                            try:
+                                eventsHappened = []
+                                for elem in eventsList:
+                                    #print(moodLst[int(elem)])
+                                    eventsHappened.append(moodLst[int(elem)])
+                            except IndexError:
+                                pass
+                            
+                            
+                    except FileNotFoundError as e:
+                        print("Configuration file not found! How did we get that far without it!")
+
+                    eventsHappened = str(eventsHappened)
+                    eventsHappened = eventsHappened.strip("[")
+                    eventsHappened = eventsHappened.strip("]\n")
+
+                    try:
+                        print(f"At {historyDate} you had {mood} mood because of:\n{eventsHappened}")
+                    except UnboundLocalError:
+                        print("A little error ocured! Try again later!")
+                    except NameError:
+                        print("A little error ocured! Try again later!")
+                else:
+                    pass
+            
+
+        
+
+            
+
+    # loads mood data to json file that stores the mood-events data
     def loadToFile(self, moodFile = moodFile):
         try:
             with open(moodFile, "a") as f:
@@ -327,6 +381,7 @@ class MenuManager:
             "Notes\t\t2\n"
             "Statistics\t3\n"
             "Callendar\t4\n"
+            "Mood history\t5\n"
             "===\t===\t===\t===\n"
             "Quit\t\tQ\n")
         menuSelect = input(">> ")
@@ -365,10 +420,12 @@ class MenuManager:
             elif choice.lower() == "read":
                 cm.readSavedTerms()
 
+        elif menuSelect.lower().strip() == "5":
+            mim = MoodInputManager()
+            mim.historyRead()
 
 #TODO MoodInputManager - bugfixes and security (try-except)
 #TODO cosmetics like not ending app instantly and stuff
-
 
 if __name__ == "__main__":
     while True:
