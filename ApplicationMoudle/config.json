@@ -1,10 +1,10 @@
 {
     "events": [
-        ["bad_exam", "unexpected_test", "medical_problems", "hunger", "pain", "fail", "argument", "breakup",
-        "bad_weather", "money_loss", "no_sleep"],
-        ["dummy_value_1", "dummy_value_2", "dummy_value_3", "dummy_value_4", "dummy_value_5"],
-        ["cofee", "friends", "shopping", "party", "good_grade", "got_a_gift",
-        "ate_good_food", "fun_activity", "did_sport", "date", "rested_well", "did_good_at_work"]
+        ["a bad exam", "an unexpected short test", "medical problems", "hunger", "pain", "disappointment", "had an argument", "a breakup",
+        "bad weather", "lost money", "no sleep"],
+        ["had an exam", "went to work", "met with family", "went for a walk", "cooked something", "went shopping"],
+        ["had coffee", "met friends", "went shopping", "wemt clubbing", "got a good grade", "got a gift",
+        "ate good food", "fun activity", "did sport", "date", "rested well", "did well at work"]
     ],
     "weekday": "0"
 }
