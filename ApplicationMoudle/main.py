@@ -144,17 +144,14 @@ class MoodInputManager:
 
                     try:
                         print(f"At {historyDate} you had {mood} mood because of:\n{eventsHappened}")
+                        input("Press ENTER key to continue")
                     except UnboundLocalError:
                         print("A little error ocured! Try again later!")
                     except NameError:
                         print("A little error ocured! Try again later!")
                 else:
                     pass
-            
-
-        
-
-            
+   
 
     # loads mood data to json file that stores the mood-events data
     def loadToFile(self, moodFile = moodFile):
@@ -303,7 +300,7 @@ class CalendarManager:
         cal = calendar.TextCalendar()
         cal.setfirstweekday(firstWeekday)
         cal = cal.formatmonth(int(date[0:4]), int(date[5:7])) #YYYY , MM ;;;; Generates callendar based on current date
-        print("\t",cal)
+        print(cal)
 
 
     def addNewTerm(self):
@@ -424,8 +421,6 @@ class MenuManager:
             mim = MoodInputManager()
             mim.historyRead()
 
-#TODO MoodInputManager - bugfixes and security (try-except)
-#TODO cosmetics like not ending app instantly and stuff
 
 if __name__ == "__main__":
     while True:
