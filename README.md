@@ -1,22 +1,7 @@
-# HackHeroes2020
-Project made for HackHeroes 2020 competition.
+# MeHealth
 
-beta description: <br>
-Aplkacja kalendarz, w której można zapisywać różne wydarzenia, nie tylko planowane, ale także takie które się wydarzyły (np niespodziewana kartkówka), złe samopoczucie, ból jakiejś części ciała, cokolwiek. Aplikacja ponadto pyta jak czuje się psychicznie użytkownik. Pomoże to kontrolować stan zdrowia psychicznego użytkownika. 
-Dodatkową funkcją będzie AI, które wykrywa jakie wydarzenia spowodowały jakie samopoczucie i np we wieczór przed trundym dniem wyśle powiadomienie typu "hej jutro zapowiada się ciężki dzień :c Pamiętaj pić dużo wody i się nie stresować zbytnio! ❤" albo przed dobrym dniem "Ale dzień cię jutro czeka! Jupi! Baw się dobrze ❤"
-
-## Etapy projektu
-1. mechanizm wprowadzania danych i ich przechowywania 
-	prosty mechanizm konsolowy / gui, który pozwoli prototypować interakcję z użytkownikiem.
-	odpowiada za kontrolę jakie dane zostają wprowadzone i gdzie.
-	napisany w pythonie
-	
-2. mechanizm predycji wydrzeń i wykrywaia prawidłowości. ostrzega użytkownika i prowadzi z nim pewien rodzaj dialogu,
-	oparty na ai mechanizm predykcji z danych tekstowych
-
-3. prototyp właściwego GUI wykonany może być na przykład w adobe XD
-
-1 2 i 3 część nie muszą być ze sobą połączone a jedynie dokładnie opisane ich działanie i przeznaczenie ze względu na pozwolene przedstawienia
-protoypów aplikacji
-
-końcowy produkt można napisać w pythonie i darcie 
+Aplkacja z funkcją kalendarza, w której można zapisywać różne wydarzenia z przyszłości i przeszłości (np niespodziewana kartkówka), złe samopoczucie. Aplikacja dzięki temu zbiera informacje o tym jak czuje się użytkownik, oraz jakie wydarzenia spowodowały konkretne samopoczucie. <br>
+Dzięki pobranym danym użytkownik nie tylko może przeanalizować zmiany nastroju na przestrzeni dni, ale także sprawdzić jakie wydarzenia poboczne mają na niego określony wpływ. Ponadto apliakcja oferuje funkcję notatek i terminażera, dzięki czemu użytkownik może komfortowo prowadzić między innymi pamiętnik. <br>
+Funkcja sztucznej inteligencji w aplikacji pomoże przewidywać z wyprzedzeniem nastrój użytkownika oraz rozpoznawać nieprawdłowości (m. in. intensywne wachania nastroju).<br>
+Dodatkową fukncją będzie system ostrzegania i motywowania użytkownika. Przykładowo jeśli ten będzie miał w kalendarzu test aplikacja wyśle powiadomienie "Jutro sprawdzian. Pamiętaj aby się nie stresować! Powodzenia!". <br>
+MeHealth pomoże kontrolować i wspierać psychicznie użytkownika.
